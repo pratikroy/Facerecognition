@@ -134,11 +134,12 @@ print("newTestX shape: ", newTestX.shape)
 savez_compressed('5-celebrity-faces-embeddings.npz', newTrainX, trainy, newTestX, testy)
 
 
+# Used for visualization part
+data = load('5-celebrity-faces-dataset.npz')
+testX_faces = data['arr_2']
 # Load embedding dataset here for measuring accuracy acore
 # load dataset
 data = load('5-celebrity-faces-embeddings.npz')
-# Used for visualization part
-testX_faces = data['arr_2']
 trainX, trainy, testX, testy = data['arr_0'], data['arr_1'], data['arr_2'], data['arr_3']
 print('Dataset: train=%d, test=%d' % (trainX.shape[0], testX.shape[0]))
 # Normalize input vectors
@@ -179,7 +180,7 @@ class_probability = yhat_prob[0, class_index] * 100
 predict_names = out_encoder.inverse_transform(yhat_class)
 print('Predicted: %s (%.3f)' % (predict_names[0], class_probability))
 print('Expected: %s' % random_face_name[0])
-# plot for fun
+# plot the image for better visualization
 pyplot.imshow(random_face_pixels)
 title = '%s (%.3f)' % (predict_names[0], class_probability)
 pyplot.title(title)
