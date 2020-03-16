@@ -7,7 +7,8 @@ from numpy import expand_dims
 from numpy import savez_compressed
 from mtcnn.mtcnn import MTCNN
 from keras.models import load_model
-from matplotlib import pyplot as plt
+from matplotlib import pyplot
+from random import choice
 
 # Import Sklearn for model building
 from sklearn.svm import SVC
@@ -136,6 +137,8 @@ savez_compressed('5-celebrity-faces-embeddings.npz', newTrainX, trainy, newTestX
 # Load embedding dataset here for measuring accuracy acore
 # load dataset
 data = load('5-celebrity-faces-embeddings.npz')
+# Used for visualization part
+testX_faces = data['arr_2']
 trainX, trainy, testX, testy = data['arr_0'], data['arr_1'], data['arr_2'], data['arr_3']
 print('Dataset: train=%d, test=%d' % (trainX.shape[0], testX.shape[0]))
 # Normalize input vectors
@@ -150,6 +153,13 @@ testy = out_encoder.transform(testy)
 # Fit model
 model = SVC(kernel='linear', probability=True)
 model.fit(trainX, trainy)
+# Used for visualization part
+# Test model on a random example from the test data set
+selection = choice([ i for i in range(testX.shape[0])])
+random_face_pixels = testX_faces[selection]
+random_face_emb = testX[selection]
+random_face_class = testy[selection]
+random_face_name = out_encoder.inverse_transform([random_face_class])
 # Predict 
 yhat_train = model.predict(trainX)
 yhat_test = model.predict(testX)
@@ -158,3 +168,19 @@ score_train = accuracy_score(trainy, yhat_train)
 score_test = accuracy_score(testy, yhat_test)
 # Print the result
 print('Accuracy: train=%.3f, test=%.3f' % (score_train*100, score_test*100))
+# Used for visualization part
+# Prediction for the face
+samples = expand_dims(random_face_emb, axis=0)
+yhat_class = model.predict(samples)
+yhat_prob = model.predict_proba(samples)
+# Used for visualization part, get the name
+class_index = yhat_class[0]
+class_probability = yhat_prob[0, class_index] * 100
+predict_names = out_encoder.inverse_transform(yhat_class)
+print('Predicted: %s (%.3f)' % (predict_names[0], class_probability))
+print('Expected: %s' % random_face_name[0])
+# plot for fun
+pyplot.imshow(random_face_pixels)
+title = '%s (%.3f)' % (predict_names[0], class_probability)
+pyplot.title(title)
+pyplot.show()
