@@ -111,8 +111,9 @@ data = load('5-celebrity-faces-dataset.npz')
 trainX, trainy, testX, testy = data['arr_0'], data['arr_1'], data['arr_2'], data['arr_3']
 print("Loaded: ", trainX.shape, trainy.shape, testX.shape, testy.shape)
 # Load the facenet model
+print("Loading pre-trained Keras model for face recognition")
 model = load_model('facenet_keras.h5', compile=False)
-print("Pre-trained face recognition model loaded...")
+print("Face recognition model loaded successfully...")
 
 # Convert training set faces into embedding
 newTrainX = list()
