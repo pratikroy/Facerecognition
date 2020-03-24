@@ -9,7 +9,7 @@ class RealTimeFaceDetection:
 	def __init__(self):
 		self.detector = MTCNN()
 		self.video_cap = cv2.VideoCapture(0)
-		self.stroke = 2
+		self.stroke = 1
 		self.color = (255, 0, 0)
 
 	def find_faces(self):
