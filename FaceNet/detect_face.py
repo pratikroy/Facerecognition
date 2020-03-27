@@ -39,8 +39,11 @@ def extract_face(filename, required_size=(160,160)):
 	face = pixels[y1:y2, x1:x2]
 	# Resize pixels required for model
 	image = Image.fromarray(face)
+	# Change image size to required size because at 160*160 this model
+	# works best
 	image = image.resize(required_size)
 	face_array = asarray(image)
+	print(face_array.shape)
 	return face_array
 
 
@@ -99,7 +102,7 @@ def get_embedding(model, face_pixels):
 
 # Load train data set
 trainX, trainy = load_dataset('5-celebrity-faces-dataset/train/')
-print(trainX.shape, trainy.shape)
+print("Shape of trainX & trainy: ", trainX.shape, trainy.shape)
 # Load test dataset
 testX, testy = load_dataset('5-celebrity-faces-dataset/val/')
 # save arrays to one file in compressed format
@@ -109,7 +112,7 @@ savez_compressed('5-celebrity-faces-dataset.npz', trainX, trainy, testX, testy)
 # Load the face dataset
 data = load('5-celebrity-faces-dataset.npz')
 trainX, trainy, testX, testy = data['arr_0'], data['arr_1'], data['arr_2'], data['arr_3']
-print("Loaded: ", trainX.shape, trainy.shape, testX.shape, testy.shape)
+print("Loaded datasets: ", trainX.shape, trainy.shape, testX.shape, testy.shape)
 # Load the facenet model
 print("Loading pre-trained Keras model for face recognition")
 model = load_model('facenet_keras.h5', compile=False)
