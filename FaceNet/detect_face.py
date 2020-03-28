@@ -1,3 +1,4 @@
+import pickle
 from PIL import Image
 from os import listdir
 from os.path import isdir
@@ -17,6 +18,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import Normalizer
 
 
+# Save the model name as constant
+SK_MODEL_NAME = "FACENET_MODEL.sav"
 
 # Extract a single face from a single photograph
 def extract_face(filename, required_size=(160,160)):
@@ -158,6 +161,8 @@ testy = out_encoder.transform(testy)
 # Fit model
 model = SVC(kernel='linear', probability=True)
 model.fit(trainX, trainy)
+# Save the model here for future use
+pickle.dump(model, open(SK_MODEL_NAME, 'wb'))
 # Used for visualization part
 # Test model on a random example from the test data set
 selection = choice([ i for i in range(testX.shape[0])])

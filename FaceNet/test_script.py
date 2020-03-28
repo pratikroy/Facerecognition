@@ -1,4 +1,5 @@
 import cv2
+import pickle
 from PIL import Image
 from numpy import load
 from numpy import expand_dims
@@ -17,6 +18,9 @@ class RealTimeFaceDetection:
 		print("Loading pre-trained Keras model for face recognition")
 		self.keras_model = load_model('facenet_keras.h5', compile=False)
 		print("Face recognition model loaded successfully...")
+		print("Loading pre-trained SVC model")
+		self.svc_model = pickle.load(open('FACENET_MODEL.sav', 'rb'))
+		print("Loading successful...")
 
 	def img_to_array(self, face_img_pixels, required_size=(160, 160)):
 		image = Image.fromarray(face_img_pixels)
@@ -25,14 +29,10 @@ class RealTimeFaceDetection:
 
 	# Get the face embedding for one face
 	def get_embedding(self, model, face_pixels):
-		# Scale pixel values
 		face_pixels = face_pixels.astype('float32')
-		# Standardize pixel values
 		mean, std = face_pixels.mean(), face_pixels.std()
 		face_pixels = (face_pixels - mean) / std
-		# Transform face into one sample
 		samples = expand_dims(face_pixels, axis=0)
-		# Make predictions to get embedding
 		yhat = model.predict(samples)
 		return yhat[0]
 
@@ -47,7 +47,9 @@ class RealTimeFaceDetection:
 				x2, y2 = x1 + width, y1 + height
 				face_arr = self.img_to_array(pixels[y1:y2, x1:x2])
 				face_emb = self.get_embedding(self.keras_model, face_arr)
-				print(face_emb.shape)
+				samples = expand_dims(face_emb, axis=0)
+				yhat_class = self.svc_model.predict(samples)
+				print(yhat_class)
 
 			cv2.imshow('frame', frame)
 			if cv2.waitKey(1) & 0xFF == ord('q'):
