@@ -7,6 +7,8 @@ from numpy import asarray
 from mtcnn.mtcnn import MTCNN
 from keras.models import load_model
 
+from sklearn.preprocessing import LabelEncoder
+
 
 class RealTimeFaceDetection:
 
@@ -21,6 +23,7 @@ class RealTimeFaceDetection:
 		print("Loading pre-trained SVC model")
 		self.svc_model = pickle.load(open('FACENET_MODEL.sav', 'rb'))
 		print("Loading successful...")
+		self.emb_data = load('5-celebrity-faces-embeddings.npz')
 
 	def img_to_array(self, face_img_pixels, required_size=(160, 160)):
 		image = Image.fromarray(face_img_pixels)
@@ -36,7 +39,15 @@ class RealTimeFaceDetection:
 		yhat = model.predict(samples)
 		return yhat[0]
 
+	def get_encoder(self):
+		trainy = self.emb_data['arr_1']
+		# Label encode targets
+		out_encoder = LabelEncoder()
+		out_encoder.fit(trainy)
+		return out_encoder
+
 	def find_faces(self):
+		out_encoder = self.get_encoder()
 		while(self.video_cap.isOpened()):
 			ret, frame = self.video_cap.read()
 			rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -49,7 +60,8 @@ class RealTimeFaceDetection:
 				face_emb = self.get_embedding(self.keras_model, face_arr)
 				samples = expand_dims(face_emb, axis=0)
 				yhat_class = self.svc_model.predict(samples)
-				print(yhat_class)
+				predict_names = out_encoder.inverse_transform(yhat_class)
+				print(predict_names[0])
 
 			cv2.imshow('frame', frame)
 			if cv2.waitKey(1) & 0xFF == ord('q'):
