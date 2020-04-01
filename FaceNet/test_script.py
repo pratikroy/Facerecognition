@@ -55,6 +55,7 @@ class RealTimeFaceDetection:
 			all_faces = self.detector.detect_faces(pixels)
 			for face in all_faces:
 				x1, y1, width, height = face['box']
+				x1, y1 = abs(x1), abs(y1)
 				x2, y2 = x1 + width, y1 + height
 				face_arr = self.img_to_array(pixels[y1:y2, x1:x2])
 				face_emb = self.get_embedding(self.keras_model, face_arr)

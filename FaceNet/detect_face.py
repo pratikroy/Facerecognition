@@ -1,7 +1,9 @@
+import time
 import pickle
 from PIL import Image
 from os import listdir
 from os.path import isdir
+from os import remove
 from numpy import load
 from numpy import asarray
 from numpy import expand_dims
@@ -21,6 +23,25 @@ from sklearn.preprocessing import Normalizer
 # Save the model name as constant
 SK_MODEL_NAME = "FACENET_MODEL.sav"
 
+
+# manipulate images before processing them
+def image_manipulation(dir_name):
+	for subdir in listdir(dir_name):
+		dir_path = dir_name + subdir + '/'
+		for filename in listdir(dir_path):
+			img_path = dir_path + filename
+			print(img_path)
+			image = Image.open(img_path)
+			w, h = image.size
+			if not image.mode == 'RGB':
+				image = image.convert('RGB')
+			if w > 400 and h > 400:
+				image = image.resize((300, 300))
+			new_img = dir_path + str(time.time()) + '.jpg'
+			image.save(new_img, quality = 95)
+			remove(img_path)
+
+
 # Extract a single face from a single photograph
 def extract_face(filename, required_size=(160,160)):
 	# Load image from file
@@ -33,21 +54,23 @@ def extract_face(filename, required_size=(160,160)):
 	detector = MTCNN()
 	# Detect faces in the image
 	results = detector.detect_faces(pixels)
-	# Extract the bounding box for the face
-	x1, y1, width, height = results[0]['box']
-	# Make sure to input only positive values
-	x1, y1 = abs(x1), abs(y1)
-	x2, y2 = x1 + width, y1 + height
-	# Extract the face
-	face = pixels[y1:y2, x1:x2]
-	# Resize pixels required for model
-	image = Image.fromarray(face)
-	# Change image size to required size because at 160*160 this model
-	# works best
-	image = image.resize(required_size)
-	face_array = asarray(image)
-	print(face_array.shape)
-	return face_array
+	if len(results) > 0:
+		# Extract the bounding box for the face
+		x1, y1, width, height = results[0]['box']
+		# Make sure to input only positive values
+		x1, y1 = abs(x1), abs(y1)
+		x2, y2 = x1 + width, y1 + height
+		# Extract the face
+		face = pixels[y1:y2, x1:x2]
+		# Resize pixels required for model
+		image = Image.fromarray(face)
+		# Change image size to required size because at 160*160 this model
+		# works best
+		image = image.resize(required_size)
+		face_array = asarray(image)
+		print(face_array.shape)
+		return face_array
+	return None
 
 
 # Load images and extract faces for all images in a directory
@@ -60,7 +83,8 @@ def load_faces(directory):
 		# Get face
 		face = extract_face(path)
 		# Store them
-		faces.append(face)
+		if type(face) != type(None):
+			faces.append(face)
 
 	return faces
 
@@ -101,6 +125,10 @@ def get_embedding(model, face_pixels):
 	yhat = model.predict(samples)
 
 	return yhat[0]
+
+
+image_manipulation('5-celebrity-faces-dataset/train/')
+image_manipulation('5-celebrity-faces-dataset/val/')
 
 
 # Load train data set
