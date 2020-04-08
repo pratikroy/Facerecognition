@@ -61,8 +61,15 @@ class RealTimeFaceDetection:
 				face_emb = self.get_embedding(self.keras_model, face_arr)
 				samples = expand_dims(face_emb, axis=0)
 				yhat_class = self.svc_model.predict(samples)
-				predict_names = out_encoder.inverse_transform(yhat_class)
-				print(predict_names[0])
+				yhat_prob = self.svc_model.predict_proba(samples)
+				class_index = yhat_class[0]
+				class_probability = yhat_prob[0, class_index] * 100
+				class_probability = round(class_probability)
+				if class_probability > 95.0:
+					predict_names = out_encoder.inverse_transform(yhat_class)
+					print('Predicted: %s (%f)' % (predict_names[0], class_probability))
+				else:
+					print("Low accuracy, probability = %f" % (class_probability))
 
 			cv2.imshow('frame', frame)
 			if cv2.waitKey(1) & 0xFF == ord('q'):

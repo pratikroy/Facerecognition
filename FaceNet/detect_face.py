@@ -35,7 +35,7 @@ def image_manipulation(dir_name):
 			w, h = image.size
 			if not image.mode == 'RGB':
 				image = image.convert('RGB')
-			if w > 400 and h > 400:
+			if w > 300 and h > 300:
 				image = image.resize((300, 300))
 			new_img = dir_path + str(time.time()) + '.jpg'
 			image.save(new_img, quality = 95)
